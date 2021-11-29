@@ -133,3 +133,6 @@ images/
 
 # Tar.gz
 *.tar.gz
+
+# Model weights
+output/
