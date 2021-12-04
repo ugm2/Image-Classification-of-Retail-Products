@@ -6,6 +6,7 @@ import torch
 
 import logging
 import os
+from sklearn.preprocessing import LabelEncoder
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
@@ -19,9 +20,9 @@ class ViTForImageClassification(nn.Module):
         self.dropout = nn.Dropout(0.1)
         self.classifier = nn.Linear(self.vit.config.hidden_size, num_labels)
         self.num_labels = num_labels
+        self.label_encoder = LabelEncoder()
 
     def forward(self, pixel_values, labels):
-        print(type(pixel_values))
         outputs = self.vit(pixel_values=pixel_values)
         output = self.dropout(outputs.last_hidden_state[:,0])
         logits = self.classifier(output)
@@ -48,13 +49,18 @@ class ViTForImageClassification(nn.Module):
         sequence_classifier_output = self.forward(prep_images, None)
         # Get max logit
         logits = sequence_classifier_output.logits.detach().cpu().numpy()
-        return np.argmax(logits, axis=1)
+        class_nums = np.argmax(logits, axis=1)
+        class_names = self.label_encoder.inverse_transform(class_nums)
+        return class_names
 
     def save(self, path):
         logger.info("Saving model")
-        torch.save(self.state_dict(), path)
-        # torch.save(self, path)
+        torch.save(self.state_dict(), path + "/model.pt")
+        # Save label encoder
+        np.save(path + "/label_encoder.npy", self.label_encoder.classes_)
 
     def load(self, path):
         logger.info("Loading model")
-        self.load_state_dict(torch.load(path))
+        self.load_state_dict(torch.load(path + "/model.pt"))
+        # Load label encoder
+        self.label_encoder.classes_ = np.load(path + "/label_encoder.npy")

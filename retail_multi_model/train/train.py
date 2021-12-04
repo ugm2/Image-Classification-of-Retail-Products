@@ -52,6 +52,9 @@ def train(
         model_name=pretrained_model_name,
         num_labels=len(set(labels)))
 
+    # Labels to categorical
+    labels = model.label_encoder.fit_transform(labels)
+
     # Define torchvision transforms to be applied to each image.
     normalize = Normalize(mean=model.feature_extractor.image_mean, std=model.feature_extractor.image_std)
     def train_transforms(batch):
@@ -72,9 +75,6 @@ def train(
 
     train_dataset, test_dataset = prepare_dataset(
         images, labels, model, .2, train_transforms, val_transforms)
-    # print length of train and test datasets
-    print(train_dataset)
-    print(test_dataset)
 
     trainer = Trainer(
         model=model,
@@ -94,7 +94,6 @@ def train(
         compute_metrics=compute_metrics,
     )
     train_result = trainer.train(resume_from_checkpoint='output/checkpoint-12400')
-    trainer.save_model('.model/')
     trainer.save_metrics("train", train_result.metrics)
     trainer.save_state()
     # Evaluate the model
@@ -105,8 +104,8 @@ def train(
     with open('eval_result.txt', 'w') as f:
         f.write(str(eval_result))
     # Create directory if it doesn't exist
-    os.makedirs('pytorch_model', exist_ok=True)
-    model.save('pytorch_model/model.pth')
+    os.makedirs('model', exist_ok=True)
+    model.save('model/')
 
 
 if __name__ == '__main__':
