@@ -1,0 +1,1 @@
+streamlit run interface/interface.py --server.port=5003
