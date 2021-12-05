@@ -1,0 +1,1 @@
+python -m uvicorn retail_multi_model.api.server:app --host 0.0.0.0 --port 5002

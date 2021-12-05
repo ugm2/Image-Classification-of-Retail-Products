@@ -1,12 +1,11 @@
 import os
 import numpy as np
 from PIL import Image
-from tensorflow.python.keras.layers.pooling import GlobalAveragePooling2D
 from tqdm import tqdm
 import logging
 from sklearn.model_selection import train_test_split
-from sklearn import preprocessing
 from retail_multi_model.train.dataset import FreiburgGroceriesDataset
+np.random.seed(42)
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)

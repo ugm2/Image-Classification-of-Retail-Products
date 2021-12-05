@@ -12,7 +12,7 @@ logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
 
 class ViTForImageClassification(nn.Module):
-    def __init__(self, model_name, num_labels=10):
+    def __init__(self, model_name, num_labels=25):
         logger.info("Loading model")
         super(ViTForImageClassification, self).__init__()
         self.vit = ViTModel.from_pretrained(model_name)
@@ -21,8 +21,12 @@ class ViTForImageClassification(nn.Module):
         self.classifier = nn.Linear(self.vit.config.hidden_size, num_labels)
         self.num_labels = num_labels
         self.label_encoder = LabelEncoder()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model_name = model_name
 
     def forward(self, pixel_values, labels):
+        logger.info("Forwarding")
+        pixel_values = pixel_values.to(self.device)
         outputs = self.vit(pixel_values=pixel_values)
         output = self.dropout(outputs.last_hidden_state[:,0])
         logits = self.classifier(output)
@@ -55,6 +59,7 @@ class ViTForImageClassification(nn.Module):
 
     def save(self, path):
         logger.info("Saving model")
+        os.makedirs(path, exist_ok=True)
         torch.save(self.state_dict(), path + "/model.pt")
         # Save label encoder
         np.save(path + "/label_encoder.npy", self.label_encoder.classes_)
@@ -64,3 +69,7 @@ class ViTForImageClassification(nn.Module):
         self.load_state_dict(torch.load(path + "/model.pt"))
         # Load label encoder
         self.label_encoder.classes_ = np.load(path + "/label_encoder.npy")
+        self.vit.to(self.device)
+        self.vit.eval()
+        self.to(self.device)
+        self.eval()

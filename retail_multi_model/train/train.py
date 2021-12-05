@@ -95,17 +95,16 @@ def train(
     )
     train_result = trainer.train(resume_from_checkpoint='output/checkpoint-12400')
     trainer.save_metrics("train", train_result.metrics)
-    trainer.save_state()
+    # trainer.save_model('output/model/')
+    # trainer.save_state()
     # Evaluate the model
-    eval_result = trainer.evaluate()
-    # trainer.save_metrics("eval", eval_result.metrics)
-    print(eval_result)
-    # Save eval_result to a file
-    with open('eval_result.txt', 'w') as f:
-        f.write(str(eval_result))
-    # Create directory if it doesn't exist
-    os.makedirs('model', exist_ok=True)
-    model.save('model/')
+    # eval_result = trainer.evaluate()
+    # # trainer.save_metrics("eval", eval_result.metrics)
+    # print(eval_result)
+    # # Save eval_result to a file
+    # with open('eval_result.txt', 'w') as f:
+    #     f.write(str(eval_result))
+    model.save('model')
 
 
 if __name__ == '__main__':
