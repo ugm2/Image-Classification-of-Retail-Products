@@ -5,10 +5,13 @@ from tqdm import tqdm
 import logging
 from sklearn.model_selection import train_test_split
 from retail_multi_model.train.dataset import FreiburgGroceriesDataset
+from google_images_search import GoogleImagesSearch
 np.random.seed(42)
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
+
+gis = GoogleImagesSearch('AIzaSyBS1XZKJLmE6lud4j8nWvxkSNXw1RwZBuw', 'e643bed31b3b0443b')
 
 def load_images_with_labels_from_folder(folder, num_images=None):
     images = []
@@ -58,3 +61,4 @@ def prepare_dataset(images,
     logger.info("Train dataset: %d images", len(labels_train))
     logger.info("Test dataset: %d images", len(labels_test))
     return train_dataset, test_dataset
+
