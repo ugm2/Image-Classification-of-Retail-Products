@@ -2,7 +2,8 @@ import os
 import click
 from retail_multi_model.train.utils import (
     load_images_with_labels_from_folder,
-    prepare_dataset
+    prepare_dataset,
+    augment_dataset
 )
 from retail_multi_model.core.model import ViTForImageClassification
 
@@ -48,6 +49,8 @@ def train(
         dropout_rate
     ):
     images, labels = load_images_with_labels_from_folder(dataset_path, num_images)
+    # augment_dataset(labels, num_images_per_class=10, image_size=image_size)
+
     model = ViTForImageClassification(
         model_name=pretrained_model_name,
         num_labels=len(set(labels)))

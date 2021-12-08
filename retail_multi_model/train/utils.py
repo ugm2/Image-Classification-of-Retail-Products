@@ -62,3 +62,82 @@ def prepare_dataset(images,
     logger.info("Test dataset: %d images", len(labels_test))
     return train_dataset, test_dataset
 
+def augment_dataset(labels, num_images_per_class=10, image_size=224):
+    logger.info("Augmenting dataset")
+    labels_set = set(labels)
+    for label in tqdm(labels_set, desc='Augmenting dataset'):
+        print(label)
+        if label == 'BEANS':
+            query = ['white beans', 'black beans', 'red beans']
+            query.append([q + ' can' for q in query])
+        elif label == 'CAKE':
+            query = ['cake', 'cake grocery store', 'dry cake', 'muffins packet']
+        elif label == 'CANDY':
+            query = ['candy packet', 'sweets candy', 'sweets supermarket']
+        elif label == 'CEREAL':
+            query = ['cereal', 'cereal packet']
+        elif label == 'CHIPS':
+            query = ['chips', 'chips packet']
+        elif label == 'CHOCOLATE':
+            query = ['chocolate packet']
+        elif label == 'COFFEE':
+            query = ['coffee grocery', 'coffee packet']
+        elif label == 'CORN':
+            query = ['corn can', 'corn packet']
+        elif label == 'FISH':
+            query = ['fish can', 'fish packet']
+        elif label == 'FLOUR':
+            query = ['flour packet']
+        elif label == 'HONEY':
+            query = ['honey grocery', 'honey jar']
+        elif label == 'JAM':
+            query = ['jam jar']
+        elif label == 'JUICE':
+            query = ['juice bottle', 'juice packet']
+        elif label == 'MILK':
+            query = ['milk bottle', 'milk packet']
+        elif label == 'NUTS':
+            query = ['nuts packet']
+        elif label == 'OIL':
+            query = ['oil bottle']
+        elif label == 'PASTA':
+            query = ['pasta packet']
+        elif label == 'RICE':
+            query = ['rice packet']
+        elif label == 'SODA':
+            query = ['soda bottle', 'soda can']
+        elif label == 'SPICES':
+            query = ['spices bottle']
+        elif label == 'SUGAR':
+            query = ['sugar packet']
+        elif label == 'TEA':
+            query = ['tea packet', 'tea bags']
+        elif label == 'TOMATO_SAUCE':
+            query = ['tomato sauce', 'tomato sauce packet', 'tomato sauce can']
+        elif label == 'VINEGAR':
+            query = ['vinegar bottle', 'vinegar can', 'vinegar packet']
+        elif label == 'WATER':
+            query = ['water bottle', 'water bottle supermarket']
+        num_images = round(num_images_per_class / len(query))
+        for q in query:
+            google_image_search(q, num_images, label, image_size)
+
+def google_image_search(query, num_images=10, download_path=None, image_size=224):
+    # define search params:
+    _search_params = {
+        'q': query,
+        'num': num_images,
+        'fileType': 'jpg | png',
+        'imgSize': 'LARGE',
+        'imgColorType': 'color'
+    }
+    if download_path is None:
+        download_path = os.path.join(os.getcwd(), 'new_images') + f'/{query}'
+    else:
+        download_path = os.path.join(os.getcwd(), 'new_images') + f'/{download_path}'
+    gis.search(search_params=_search_params,
+               path_to_dir=download_path,
+               width=image_size,
+               height=image_size)
+
+google_image_search('beans')
