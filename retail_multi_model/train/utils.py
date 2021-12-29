@@ -1,3 +1,4 @@
+import io
 import os
 import numpy as np
 from PIL import Image
@@ -5,13 +6,13 @@ from tqdm import tqdm
 import logging
 from sklearn.model_selection import train_test_split
 from retail_multi_model.train.dataset import FreiburgGroceriesDataset
-from google_images_search import GoogleImagesSearch
+# from google_images_search import GoogleImagesSearch
 np.random.seed(42)
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
 
-gis = GoogleImagesSearch('AIzaSyBS1XZKJLmE6lud4j8nWvxkSNXw1RwZBuw', 'e643bed31b3b0443b')
+# gis = GoogleImagesSearch('AIzaSyBS1XZKJLmE6lud4j8nWvxkSNXw1RwZBuw', 'e643bed31b3b0443b')
 
 def load_images_with_labels_from_folder(folder, num_images=None):
     images = []
@@ -62,82 +63,173 @@ def prepare_dataset(images,
     logger.info("Test dataset: %d images", len(labels_test))
     return train_dataset, test_dataset
 
-def augment_dataset(labels, num_images_per_class=10, image_size=224):
-    logger.info("Augmenting dataset")
-    labels_set = set(labels)
-    for label in tqdm(labels_set, desc='Augmenting dataset'):
-        print(label)
-        if label == 'BEANS':
-            query = ['white beans', 'black beans', 'red beans']
-            query.append([q + ' can' for q in query])
-        elif label == 'CAKE':
-            query = ['cake', 'cake grocery store', 'dry cake', 'muffins packet']
-        elif label == 'CANDY':
-            query = ['candy packet', 'sweets candy', 'sweets supermarket']
-        elif label == 'CEREAL':
-            query = ['cereal', 'cereal packet']
-        elif label == 'CHIPS':
-            query = ['chips', 'chips packet']
-        elif label == 'CHOCOLATE':
-            query = ['chocolate packet']
-        elif label == 'COFFEE':
-            query = ['coffee grocery', 'coffee packet']
-        elif label == 'CORN':
-            query = ['corn can', 'corn packet']
-        elif label == 'FISH':
-            query = ['fish can', 'fish packet']
-        elif label == 'FLOUR':
-            query = ['flour packet']
-        elif label == 'HONEY':
-            query = ['honey grocery', 'honey jar']
-        elif label == 'JAM':
-            query = ['jam jar']
-        elif label == 'JUICE':
-            query = ['juice bottle', 'juice packet']
-        elif label == 'MILK':
-            query = ['milk bottle', 'milk packet']
-        elif label == 'NUTS':
-            query = ['nuts packet']
-        elif label == 'OIL':
-            query = ['oil bottle']
-        elif label == 'PASTA':
-            query = ['pasta packet']
-        elif label == 'RICE':
-            query = ['rice packet']
-        elif label == 'SODA':
-            query = ['soda bottle', 'soda can']
-        elif label == 'SPICES':
-            query = ['spices bottle']
-        elif label == 'SUGAR':
-            query = ['sugar packet']
-        elif label == 'TEA':
-            query = ['tea packet', 'tea bags']
-        elif label == 'TOMATO_SAUCE':
-            query = ['tomato sauce', 'tomato sauce packet', 'tomato sauce can']
-        elif label == 'VINEGAR':
-            query = ['vinegar bottle', 'vinegar can', 'vinegar packet']
-        elif label == 'WATER':
-            query = ['water bottle', 'water bottle supermarket']
-        num_images = round(num_images_per_class / len(query))
-        for q in query:
-            google_image_search(q, num_images, label, image_size)
+# def augment_dataset(labels, num_images_per_class=10, image_size=224):
+#     logger.info("Augmenting dataset")
+#     labels_set = set(labels)
+#     for label in tqdm(labels_set, desc='Augmenting dataset'):
+#         print(label)
+#         if label == 'BEANS':
+#             query = ['white beans', 'black beans', 'red beans']
+#             query.append([q + ' can' for q in query])
+#         elif label == 'CAKE':
+#             query = ['cake', 'cake grocery store', 'dry cake', 'muffins packet']
+#         elif label == 'CANDY':
+#             query = ['candy packet', 'sweets candy', 'sweets supermarket']
+#         elif label == 'CEREAL':
+#             query = ['cereal', 'cereal packet']
+#         elif label == 'CHIPS':
+#             query = ['chips', 'chips packet']
+#         elif label == 'CHOCOLATE':
+#             query = ['chocolate packet']
+#         elif label == 'COFFEE':
+#             query = ['coffee grocery', 'coffee packet']
+#         elif label == 'CORN':
+#             query = ['corn can', 'corn packet']
+#         elif label == 'FISH':
+#             query = ['fish can', 'fish packet']
+#         elif label == 'FLOUR':
+#             query = ['flour packet']
+#         elif label == 'HONEY':
+#             query = ['honey grocery', 'honey jar']
+#         elif label == 'JAM':
+#             query = ['jam jar']
+#         elif label == 'JUICE':
+#             query = ['juice bottle', 'juice packet']
+#         elif label == 'MILK':
+#             query = ['milk bottle', 'milk packet']
+#         elif label == 'NUTS':
+#             query = ['nuts packet']
+#         elif label == 'OIL':
+#             query = ['oil bottle']
+#         elif label == 'PASTA':
+#             query = ['pasta packet']
+#         elif label == 'RICE':
+#             query = ['rice packet']
+#         elif label == 'SODA':
+#             query = ['soda bottle', 'soda can']
+#         elif label == 'SPICES':
+#             query = ['spices bottle']
+#         elif label == 'SUGAR':
+#             query = ['sugar packet']
+#         elif label == 'TEA':
+#             query = ['tea packet', 'tea bags']
+#         elif label == 'TOMATO_SAUCE':
+#             query = ['tomato sauce', 'tomato sauce packet', 'tomato sauce can']
+#         elif label == 'VINEGAR':
+#             query = ['vinegar bottle', 'vinegar can', 'vinegar packet']
+#         elif label == 'WATER':
+#             query = ['water bottle', 'water bottle supermarket']
+#         num_images = round(num_images_per_class / len(query))
+#         for q in query:
+#             downloadimages(q, num_images, label, image_size)
+            # google_image_search(q, num_images, label, image_size)
 
-def google_image_search(query, num_images=10, download_path=None, image_size=224):
-    # define search params:
-    _search_params = {
-        'q': query,
-        'num': num_images,
-        'fileType': 'jpg | png',
-        'imgSize': 'LARGE',
-        'imgColorType': 'color'
-    }
-    if download_path is None:
-        download_path = os.path.join(os.getcwd(), 'new_images') + f'/{query}'
-    else:
-        download_path = os.path.join(os.getcwd(), 'new_images') + f'/{download_path}'
-    gis.search(search_params=_search_params,
-               path_to_dir=download_path,
-               width=image_size,
-               height=image_size)
+import time
+from selenium import webdriver
 
-google_image_search('beans')
+def fetch_image_urls(query:str, wd:webdriver, max_links_to_fetch:int=10, sleep_between_interactions:float=1):
+    def scroll_to_end(wd):
+        wd.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(sleep_between_interactions)    
+    
+    # build the google query
+    search_url = "https://www.google.com/search?safe=off&site=&tbm=isch&source=hp&q={q}&oq={q}&gs_l=img"
+
+    # load the page
+    wd.get(search_url.format(q=query))
+
+    image_urls = set()
+    image_count = 0
+    results_start = 0
+    while image_count < max_links_to_fetch:
+        scroll_to_end(wd)
+
+        # get all image thumbnail results
+        thumbnail_results = wd.find_elements_by_css_selector("img.Q4LuWd")
+        number_results = len(thumbnail_results)
+        
+        print(f"Found: {number_results} search results. Extracting links from {results_start}:{number_results}")
+        
+        for img in thumbnail_results[results_start:number_results]:
+            # try to click every thumbnail such that we can get the real image behind it
+            try:
+                img.click()
+                time.sleep(sleep_between_interactions)
+            except Exception:
+                continue
+
+            # extract image urls    
+            actual_images = wd.find_elements_by_css_selector('img.n3VNCb')
+            for actual_image in actual_images:
+                if actual_image.get_attribute('src') and 'http' in actual_image.get_attribute('src'):
+                    image_urls.add(actual_image.get_attribute('src'))
+
+            image_count = len(image_urls)
+
+            if len(image_urls) >= max_links_to_fetch:
+                print(f"Found: {len(image_urls)} image links, done!")
+                break
+        else:
+            print("Found:", len(image_urls), "image links, looking for more ...")
+            time.sleep(30)
+            return
+            load_more_button = wd.find_element_by_css_selector(".mye4qd")
+            if load_more_button:
+                wd.execute_script("document.querySelector('.mye4qd').click();")
+
+        # move the result startpoint further down
+        results_start = len(thumbnail_results)
+
+    return image_urls
+
+import requests
+import hashlib
+def persist_image(folder_path:str, url:str):
+    try:
+        image_content = requests.get(url).content
+
+    except Exception as e:
+        print(f"ERROR - Could not download {url} - {e}")
+
+    try:
+        image_file = io.BytesIO(image_content)
+        image = Image.open(image_file).convert('RGB')
+        file_path = os.path.join(folder_path,hashlib.sha1(image_content).hexdigest()[:10] + '.jpg')
+        with open(file_path, 'wb') as f:
+            image.save(f, "JPEG", quality=85)
+        print(f"SUCCESS - saved {url} - as {file_path}")
+    except Exception as e:
+        print(f"ERROR - Could not save {url} - {e}")
+
+def search_and_download(search_term:str,wd:webdriver,target_path='./new_images',number_images=5):
+    target_folder = os.path.join(target_path,'_'.join(search_term.lower().split(' ')))
+
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+
+    res = fetch_image_urls(search_term, wd, number_images, sleep_between_interactions=0.5)
+        
+    for elem in res:
+        persist_image(target_folder,elem)
+
+# def google_image_search(query, num_images=10, download_path=None, image_size=224):
+#     # define search params:
+#     _search_params = {
+#         'q': query,
+#         'num': num_images,
+#         'fileType': 'jpg | png',
+#         'imgSize': 'LARGE',
+#         'imgColorType': 'color'
+#     }
+#     if download_path is None:
+#         download_path = os.path.join(os.getcwd(), 'new_images') + f'/{query}'
+#     else:
+#         download_path = os.path.join(os.getcwd(), 'new_images') + f'/{download_path}'
+#     gis.search(search_params=_search_params,
+#                path_to_dir=download_path,
+#                width=image_size,
+#                height=image_size)
+op = webdriver.ChromeOptions()
+op.add_argument('headless')
+d = webdriver.Chrome('./chromedriver',options=op)
+search_and_download('tomato sauce', d, number_images=10)
