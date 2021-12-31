@@ -30,10 +30,11 @@ def compute_metrics(eval_pred):
 @click.command()
 @click.option('--dataset_path', default='images/', help='Path to the dataset')
 @click.option('--num_images', default=None, help='Number of images per class to load')
+@click.option('--num_aug_images', default=5000, help='Number of images per class to load')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
-@click.option('--num_epochs', default=1, help='Number of epochs')
+@click.option('--num_epochs', default=100, help='Number of epochs')
 @click.option('--batch_size', default=32, help='Batch size')
 @click.option('--learning_rate', default=0.001, help='Learning rate')
 @click.option('--image_size', default=224, help='Image size')
@@ -41,6 +42,7 @@ def compute_metrics(eval_pred):
 def train(
         dataset_path,
         num_images,
+        num_aug_images,
         pretrained_model_name,
         num_epochs,
         batch_size,
@@ -49,7 +51,10 @@ def train(
         dropout_rate
     ):
     images, labels = load_images_with_labels_from_folder(dataset_path, num_images)
-    # augment_dataset(labels, num_images_per_class=10, image_size=image_size)
+    target_path = augment_dataset(labels, num_images_per_class=num_aug_images, image_size=image_size)
+    new_images, new_labels = load_images_with_labels_from_folder(target_path)
+    images.extend(new_images)
+    labels.extend(new_labels)
 
     model = ViTForImageClassification(
         model_name=pretrained_model_name,
@@ -101,12 +106,12 @@ def train(
     # trainer.save_model('output/model/')
     # trainer.save_state()
     # Evaluate the model
-    # eval_result = trainer.evaluate()
+    eval_result = trainer.evaluate()
     # # trainer.save_metrics("eval", eval_result.metrics)
-    # print(eval_result)
-    # # Save eval_result to a file
-    # with open('eval_result.txt', 'w') as f:
-    #     f.write(str(eval_result))
+    print(eval_result)
+    # Save eval_result to a file
+    with open('eval_result.txt', 'w') as f:
+        f.write(str(eval_result))
     model.save('model')
 
 

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 op = webdriver.ChromeOptions()
 op.add_argument('headless')
-driver = webdriver.Chrome('./chromedriver',options=op)
+driver = webdriver.Chrome('./chromedriver', options=op)
 
 def load_images_with_labels_from_folder(folder, num_images=None):
     images = []
@@ -72,7 +72,7 @@ def augment_dataset(labels, num_images_per_class=10, image_size=224):
     logger.info("Augmenting dataset")
     labels_set = set(labels)
     for label in tqdm(labels_set, desc='Augmenting dataset'):
-        print(label)
+        # print(label)
         if label == 'BEANS':
             query = ['white beans', 'black beans', 'red beans']
             query.append([q + ' can' for q in query])
@@ -126,8 +126,10 @@ def augment_dataset(labels, num_images_per_class=10, image_size=224):
             query = ['water bottle', 'water bottle supermarket']
         num_images = round(num_images_per_class / len(query))
         for q in query:
-            target_folder = search_and_download(q, driver, label, num_images)
+            target_folder, target_path = search_and_download(q, driver, label, num_images)
             resize_images_from_folder(target_folder, (image_size, image_size))
+        
+    return target_path
 
 def fetch_image_urls(query:str, wd:webdriver, max_links_to_fetch:int=10, sleep_between_interactions:float=1):
     def scroll_to_end(wd):
@@ -143,6 +145,7 @@ def fetch_image_urls(query:str, wd:webdriver, max_links_to_fetch:int=10, sleep_b
     image_urls = set()
     image_count = 0
     results_start = 0
+    patience = 100
     while image_count < max_links_to_fetch:
         scroll_to_end(wd)
 
@@ -151,7 +154,7 @@ def fetch_image_urls(query:str, wd:webdriver, max_links_to_fetch:int=10, sleep_b
         number_results = len(thumbnail_results)
         
         # print(f"Found: {number_results} search results. Extracting links from {results_start}:{number_results}")
-        
+        previous_image_count = image_count
         for img in thumbnail_results[results_start:number_results]:
             # try to click every thumbnail such that we can get the real image behind it
             try:
@@ -169,18 +172,25 @@ def fetch_image_urls(query:str, wd:webdriver, max_links_to_fetch:int=10, sleep_b
             image_count = len(image_urls)
 
             if len(image_urls) >= max_links_to_fetch:
-                print(f"Found: {len(image_urls)} image links, done!")
+                # print(f"Found: {len(image_urls)} image links, done!")
                 break
 
         # move the result startpoint further down
         results_start = len(thumbnail_results)
 
+        if previous_image_count == image_count:
+            patience -= 1
+            if patience == 0:
+                # print(f"Found: {len(image_urls)} image links, done!")
+                break
+        else:
+            patience = 100
+
     return image_urls
 
 def persist_image(folder_path:str, url:str):
     try:
-        image_content = requests.get(url).content
-
+        image_content = requests.get(url, timeout=10).content
     except Exception as e:
         print(f"ERROR - Could not download {url} - {e}")
 
@@ -205,7 +215,7 @@ def search_and_download(search_term:str, wd:webdriver, label:str, number_images=
     for elem in res:
         persist_image(target_folder,elem)
 
-    return target_folder
+    return target_folder, target_path
 
 def resize_images_from_folder(folder_path:str, size:tuple):
     for file in os.listdir(folder_path):
