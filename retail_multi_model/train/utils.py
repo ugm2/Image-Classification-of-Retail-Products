@@ -24,13 +24,14 @@ def load_images_with_labels_from_folder(folder, num_images=None):
     labels = []
     # Loop through each folder inside the main folder
     for folder_name in tqdm(os.listdir(folder), desc='Loading images'):
+        image_count = 0
         # Check if the folder is a directory
         if os.path.isdir(os.path.join(folder, folder_name)):
             # Loop through each image inside the folder
             for image_name in os.listdir(os.path.join(folder, folder_name)):
-                # Check if the image is a file and ends with .png
+                # Check if the image is a file and ends with .png or .jpg
                 if os.path.isfile(os.path.join(folder, folder_name, image_name)) \
-                    and image_name.endswith(".png"):
+                    and image_name.endswith(".png") or image_name.endswith(".jpg"):
                     # Load the image and the label
                     image = Image.open((os.path.join(folder, folder_name, image_name)))
                     label = folder_name
@@ -39,7 +40,8 @@ def load_images_with_labels_from_folder(folder, num_images=None):
                     labels.append(label)
                     image.close()
                     # Check if the number of images is reached
-                    if num_images is not None and len(images) >= num_images:
+                    image_count += 1
+                    if num_images is not None and image_count >= num_images:
                         break
     # Log length
     logger.info("Loaded %d images", len(images))
