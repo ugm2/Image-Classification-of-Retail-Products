@@ -138,3 +138,6 @@ new_images/
 # Model weights
 output/
 model/
+
+# Selenium
+chromedriver
