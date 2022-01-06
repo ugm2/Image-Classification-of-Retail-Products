@@ -1,3 +1,4 @@
+import json
 import os
 import click
 from retail_multi_model.train.utils import (
@@ -19,23 +20,35 @@ from torchvision.transforms import (
     Resize,
     ToTensor,
 )
+from tqdm import tqdm
 
 metric = load_metric("accuracy")
+f1_score = load_metric("f1")
+
+import pandas as pd
+
+metrics_list = []
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    return metric.compute(predictions=predictions, references=labels)
+    metrics = metric.compute(predictions=predictions, references=labels)
+    f1 = f1_score.compute(predictions=predictions, references=labels, average="macro")
+    metrics.update(f1)
+    metrics_list.append(metrics)
+    metrics_df = pd.DataFrame(metrics_list)
+    metrics_df.to_csv("metrics.csv")
+    return metrics
 
 @click.command()
 @click.option('--dataset_path', default='images/', help='Path to the dataset')
 @click.option('--num_images', default=None, help='Number of images per class to load')
-@click.option('--num_aug_images', default=300, help='Number of aug images per class to download and/or load')
-@click.option('--aug_images_path', default='new_images/', help='Aug images path')
+@click.option('--num_aug_images', default=None, help='Number of aug images per class to download and/or load')
+@click.option('--aug_images_path', default=None, help='Aug images path')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
-@click.option('--num_epochs', default=50, help='Number of epochs')
+@click.option('--num_epochs', default=200, help='Number of epochs')
 @click.option('--batch_size', default=32, help='Batch size')
 @click.option('--learning_rate', default=0.001, help='Learning rate')
 @click.option('--image_size', default=224, help='Image size')
@@ -103,24 +116,21 @@ def train(
             learning_rate=learning_rate,
             weight_decay=0.01,
             evaluation_strategy='steps',
-            eval_steps=1000,
-            save_steps=1000),
+            eval_steps=3000,
+            save_steps=3000),
         train_dataset=train_dataset,
         eval_dataset=test_dataset,
         compute_metrics=compute_metrics,
     )
     train_result = trainer.train()
-    trainer.save_metrics("train", train_result.metrics)
+    # trainer.save_metrics("train", train_result.metrics)
     # trainer.save_model('output/model/')
     # trainer.save_state()
     # Evaluate the model
     eval_result = trainer.evaluate()
-    # # trainer.save_metrics("eval", eval_result.metrics)
-    print(eval_result)
-    # Save eval_result to a file
-    with open('eval_result.txt', 'w') as f:
-        f.write(str(eval_result))
     model.save('model')
+    log_history_df = pd.DataFrame(trainer.state.log_history)
+    log_history_df.to_csv("log_history.csv")
 
 
 if __name__ == '__main__':
