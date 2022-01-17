@@ -12,12 +12,12 @@ logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
 
 class ViTForImageClassification(nn.Module):
-    def __init__(self, model_name, num_labels=25):
+    def __init__(self, model_name, num_labels=25, dropout=0.25):
         logger.info("Loading model")
         super(ViTForImageClassification, self).__init__()
         self.vit = ViTModel.from_pretrained(model_name)
         self.feature_extractor = ViTFeatureExtractor.from_pretrained(model_name)
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(dropout)
         self.classifier = nn.Linear(self.vit.config.hidden_size, num_labels)
         self.num_labels = num_labels
         self.label_encoder = LabelEncoder()

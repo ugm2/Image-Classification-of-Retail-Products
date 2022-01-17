@@ -1,5 +1,3 @@
-import json
-import os
 import click
 from retail_multi_model.train.utils import (
     load_images_with_labels_from_folder,
@@ -20,7 +18,6 @@ from torchvision.transforms import (
     Resize,
     ToTensor,
 )
-from tqdm import tqdm
 
 metric = load_metric("accuracy")
 f1_score = load_metric("f1")
@@ -41,18 +38,18 @@ def compute_metrics(eval_pred):
     return metrics
 
 @click.command()
-@click.option('--dataset_path', default='images/', help='Path to the dataset')
+@click.option('--dataset_path', default='images', help='Path to the dataset')
 @click.option('--num_images', default=None, help='Number of images per class to load')
-@click.option('--num_aug_images', default=None, help='Number of aug images per class to download and/or load')
+@click.option('--num_aug_images', default=5000, help='Number of aug images per class to download and/or load')
 @click.option('--aug_images_path', default=None, help='Aug images path')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
-@click.option('--num_epochs', default=200, help='Number of epochs')
-@click.option('--batch_size', default=32, help='Batch size')
+@click.option('--num_epochs', default=50, help='Number of epochs')
+@click.option('--batch_size', default=128, help='Batch size')
 @click.option('--learning_rate', default=0.001, help='Learning rate')
 @click.option('--image_size', default=224, help='Image size')
-@click.option('--dropout_rate', default=0.5, help='Dropout rate')
+@click.option('--dropout', default=0.25, help='Dropout rate')
 def train(
         dataset_path,
         num_images,
@@ -63,7 +60,7 @@ def train(
         batch_size,
         learning_rate,
         image_size,
-        dropout_rate
+        dropout
     ):
     images, labels = load_images_with_labels_from_folder(dataset_path, num_images)
     target_path = None
@@ -79,7 +76,8 @@ def train(
 
     model = ViTForImageClassification(
         model_name=pretrained_model_name,
-        num_labels=len(set(labels)))
+        num_labels=len(set(labels)),
+        dropout=dropout)
 
     # Labels to categorical
     labels = model.label_encoder.fit_transform(labels)
