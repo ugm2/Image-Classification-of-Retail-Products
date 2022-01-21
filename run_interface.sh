@@ -1,1 +1,1 @@
-streamlit run interface/interface.py --server.port=5003
+streamlit run interface/interface.py --server.port=5003 --server.fileWatcherType none

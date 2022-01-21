@@ -22,7 +22,7 @@ driver = webdriver.Chrome('./chromedriver', options=op)
 def load_images_with_labels_from_folder(dataset_folder, num_images=None):
     images = []
     labels = []
-    if dataset_folder is not None:
+    if dataset_folder is not None and num_images is not -1:
         # Loop through each folder inside the main folder
         for folder_name in tqdm(os.listdir(dataset_folder), desc='Loading images'):
             image_count = 0
@@ -44,7 +44,7 @@ def load_images_with_labels_from_folder(dataset_folder, num_images=None):
                         image_count += 1
                         if num_images is not None and image_count >= num_images:
                             break
-    if len(labels) == 0:
+    if len(labels) == 0 and dataset_folder is not None:
         for folder in os.listdir(dataset_folder):
             labels.append(folder)
 
