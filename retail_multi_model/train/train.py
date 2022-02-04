@@ -1,10 +1,7 @@
+import os
 import click
-from retail_multi_model.train.utils import (
-    load_images_with_labels_from_folder,
-    prepare_dataset,
-    augment_dataset
-)
 from retail_multi_model.core.model import ViTForImageClassification
+from retail_multi_model.train.utils import prepare_dataset
 
 from transformers import Trainer, TrainingArguments
 from datasets import load_metric
@@ -18,6 +15,7 @@ from torchvision.transforms import (
     Resize,
     ToTensor,
 )
+from imagines import DatasetAugmentation
 
 metric = load_metric("accuracy")
 f1_score = load_metric("f1")
@@ -38,7 +36,7 @@ def compute_metrics(eval_pred):
     return metrics
 
 @click.command()
-@click.option('--download_images_path', default='data/images', help='Path where to download dataset')
+@click.option('--download_images_path', default='data', help='Path where to download dataset')
 @click.option('--num_images', default=1200, help='Number of images per class to load')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
@@ -58,6 +56,17 @@ def train(
         image_size,
         dropout
     ):
+
+    # Load the dataset
+    images, labels = DatasetAugmentation().augment_dataset(
+        label_queries=os.path.join(download_images_path, "label_queries.json"),
+        output_directory=os.path.join(download_images_path, "images"),
+        max_links_to_fetch=num_images,
+        image_shape=(image_size, image_size),
+        resize_images=True,
+        return_data=True,
+        cache_data=True
+    )
 
     model = ViTForImageClassification(
         model_name=pretrained_model_name,

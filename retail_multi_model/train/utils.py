@@ -13,41 +13,7 @@ np.random.seed(42)
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
-
-def load_images_with_labels_from_folder(dataset_folder, num_images=None):
-    images = []
-    labels = []
-    if dataset_folder is not None and num_images is not -1:
-        # Loop through each folder inside the main folder
-        for folder_name in tqdm(os.listdir(dataset_folder), desc='Loading images'):
-            image_count = 0
-            # Check if the folder is a directory
-            if os.path.isdir(os.path.join(dataset_folder, folder_name)):
-                # Loop through each image inside the folder
-                for image_name in os.listdir(os.path.join(dataset_folder, folder_name)):
-                    # Check if the image is a file and ends with .png or .jpg
-                    if os.path.isfile(os.path.join(dataset_folder, folder_name, image_name)) \
-                        and image_name.endswith(".png") or image_name.endswith(".jpg"):
-                        # Load the image and the label
-                        image = Image.open((os.path.join(dataset_folder, folder_name, image_name)))
-                        label = folder_name
-                        # Add the image and the label to the list
-                        images.append(image.copy())
-                        labels.append(label)
-                        image.close()
-                        # Check if the number of images is reached
-                        image_count += 1
-                        if num_images is not None and image_count >= num_images:
-                            break
-    if len(labels) == 0 and dataset_folder is not None:
-        for folder in os.listdir(dataset_folder):
-            labels.append(folder)
-
-    # Log length
-    logger.info("Loaded %d images", len(images))
-    return images, labels
     
-
 def prepare_dataset(images,
                     labels,
                     model,
