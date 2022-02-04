@@ -38,10 +38,8 @@ def compute_metrics(eval_pred):
     return metrics
 
 @click.command()
-@click.option('--dataset_path', default='images', help='Path to the dataset')
-@click.option('--num_images', default=-1, help='Number of images per class to load')
-@click.option('--num_aug_images', default=1200, help='Number of aug images per class to download and/or load')
-@click.option('--aug_images_path', default='new_images/', help='Aug images path')
+@click.option('--download_images_path', default='data/images', help='Path where to download dataset')
+@click.option('--num_images', default=1200, help='Number of images per class to load')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
@@ -51,10 +49,8 @@ def compute_metrics(eval_pred):
 @click.option('--image_size', default=224, help='Image size')
 @click.option('--dropout', default=0.5, help='Dropout rate')
 def train(
-        dataset_path,
+        download_images_path,
         num_images,
-        num_aug_images,
-        aug_images_path,
         pretrained_model_name,
         num_epochs,
         batch_size,
@@ -62,20 +58,6 @@ def train(
         image_size,
         dropout
     ):
-    images, labels = load_images_with_labels_from_folder(dataset_path, num_images)
-    target_path = None
-    if aug_images_path is None and num_aug_images is not None:
-        target_path = augment_dataset(labels, num_images_per_class=num_aug_images, image_size=image_size)
-    elif aug_images_path is not None and num_aug_images is not None:
-        target_path = aug_images_path
-
-    if len(images) == 0:
-        labels = []
-
-    if target_path is not None:
-        new_images, new_labels = load_images_with_labels_from_folder(target_path, num_aug_images)
-        images.extend(new_images)
-        labels.extend(new_labels)
 
     model = ViTForImageClassification(
         model_name=pretrained_model_name,
