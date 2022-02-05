@@ -37,7 +37,7 @@ def compute_metrics(eval_pred):
 
 @click.command()
 @click.option('--download_images_path', default='data', help='Path where to download dataset')
-@click.option('--num_images', default=1200, help='Number of images per class to load')
+@click.option('--num_images', default=12, help='Number of images per class to load')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
@@ -74,6 +74,7 @@ def train(
         dropout=dropout)
 
     # Labels to categorical
+    print("Converting labels to categorical")
     labels = model.label_encoder.fit_transform(labels)
 
     # Define torchvision transforms to be applied to each image.
@@ -94,8 +95,9 @@ def train(
             normalize,
         ])(batch)
 
+    print("Preparing dataset")
     train_dataset, test_dataset = prepare_dataset(
-        images, labels, model, .2, train_transforms, val_transforms)
+        images, labels, model, .2, batch_size, train_transforms, val_transforms)
 
     trainer = Trainer(
         model=model,
@@ -114,6 +116,7 @@ def train(
         eval_dataset=test_dataset,
         compute_metrics=compute_metrics,
     )
+    print("Training")
     train_result = trainer.train()
     # train_result = trainer.train(resume_from_checkpoint='output/checkpoint-6000')
     # Evaluate the model

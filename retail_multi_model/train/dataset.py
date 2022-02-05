@@ -1,6 +1,6 @@
 import torch
 
-class FreiburgGroceriesDataset(torch.utils.data.Dataset):
+class RetailDataset(torch.utils.data.Dataset):
     def __init__(self, data, labels, transform=None):
         self.data = data
         self.labels = labels
@@ -16,7 +16,7 @@ class FreiburgGroceriesDataset(torch.utils.data.Dataset):
         return len(self.labels)
 
     def __repr__(self):
-        return 'FreiburgGroceriesDataset'
+        return 'RetailDataset'
 
     def __str__(self):
         return str({
