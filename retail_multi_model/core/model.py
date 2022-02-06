@@ -17,6 +17,7 @@ class ViTForImageClassification(nn.Module):
         super(ViTForImageClassification, self).__init__()
         self.vit = ViTModel.from_pretrained(model_name)
         self.feature_extractor = ViTFeatureExtractor.from_pretrained(model_name)
+        self.feature_extractor.do_resize = False
         self.dropout = nn.Dropout(dropout)
         self.classifier = nn.Linear(self.vit.config.hidden_size, num_labels)
         self.num_labels = num_labels

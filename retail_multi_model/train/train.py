@@ -37,7 +37,7 @@ def compute_metrics(eval_pred):
 
 @click.command()
 @click.option('--download_images_path', default='data', help='Path where to download dataset')
-@click.option('--num_images', default=12, help='Number of images per class to load')
+@click.option('--num_images', default=1200, help='Number of images per class to load')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
@@ -97,7 +97,7 @@ def train(
 
     print("Preparing dataset")
     train_dataset, test_dataset = prepare_dataset(
-        images, labels, model, .2, batch_size, train_transforms, val_transforms)
+        images, labels, model, .2, train_transforms, val_transforms)
 
     trainer = Trainer(
         model=model,
