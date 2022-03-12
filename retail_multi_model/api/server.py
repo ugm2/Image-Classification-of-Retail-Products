@@ -3,6 +3,9 @@ from fastapi import FastAPI, UploadFile, File
 from retail_multi_model.api.model import RetailResponse
 from retail_multi_model.core.model import ViTForImageClassification
 from PIL import Image
+import os
+
+model_path = os.environ.get('MODEL_PATH', "/home/unai/personal/Image-Classification-of-Retail-Products/model")
 
 app = FastAPI()
 
@@ -23,7 +26,7 @@ def init_model(model_path):
     name="predict_retail_items")
 async def classify_retail_items(image: UploadFile = File(...)):
     """Predict retail items."""
-    model = init_model("/home/unai/personal/Image-Classification-of-Retail-Products/model")
+    model = init_model(model_path)
     image = Image.open(image.file)
-    prediction = model.predict(image)
-    return RetailResponse(product_prediction=prediction[0])
+    prediction, confidence = model.predict(image)
+    return RetailResponse(prediction=prediction[0], confidence=round(confidence[0], 3))

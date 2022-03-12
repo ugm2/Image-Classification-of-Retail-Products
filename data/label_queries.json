@@ -7,6 +7,7 @@
     "CHIPS": ["chips", "chips packet"],
     "CHOCOLATE": ["chocolate packet"],
     "COFFEE": ["coffee grocery", "coffee packet"],
+    "CORN": ["corn", "corn packet"],
     "FISH": ["fish can", "fish packet"],
     "FLOUR": ["flour packet"],
     "HONEY": ["honey grocery", "honey jar"],

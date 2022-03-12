@@ -27,4 +27,5 @@ if image_file is not None:
     response_json = response.json()
 
     # Show the result
-    st.write(response_json)
+    st.markdown(f"**Prediction:** {response_json['prediction']}")
+    st.markdown(f"**Confidence:** {response_json['confidence']}")
