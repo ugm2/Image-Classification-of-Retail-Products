@@ -1,10 +1,7 @@
+import os
 import click
-from retail_multi_model.train.utils import (
-    load_images_with_labels_from_folder,
-    prepare_dataset,
-    augment_dataset
-)
 from retail_multi_model.core.model import ViTForImageClassification
+from retail_multi_model.train.utils import prepare_dataset
 
 from transformers import Trainer, TrainingArguments
 from datasets import load_metric
@@ -18,6 +15,7 @@ from torchvision.transforms import (
     Resize,
     ToTensor,
 )
+from imagines import DatasetAugmentation
 
 metric = load_metric("accuracy")
 f1_score = load_metric("f1")
@@ -38,10 +36,8 @@ def compute_metrics(eval_pred):
     return metrics
 
 @click.command()
-@click.option('--dataset_path', default='images', help='Path to the dataset')
-@click.option('--num_images', default=-1, help='Number of images per class to load')
-@click.option('--num_aug_images', default=1200, help='Number of aug images per class to download and/or load')
-@click.option('--aug_images_path', default='new_images/', help='Aug images path')
+@click.option('--download_images_path', default='data', help='Path where to download dataset')
+@click.option('--num_images', default=1200, help='Number of images per class to load')
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
@@ -50,32 +46,29 @@ def compute_metrics(eval_pred):
 @click.option('--learning_rate', default=0.000001, help='Learning rate')
 @click.option('--image_size', default=224, help='Image size')
 @click.option('--dropout', default=0.5, help='Dropout rate')
+@click.option('--last_checkpoint_path', default=None, help='Last checkpoint path')
 def train(
-        dataset_path,
+        download_images_path,
         num_images,
-        num_aug_images,
-        aug_images_path,
         pretrained_model_name,
         num_epochs,
         batch_size,
         learning_rate,
         image_size,
-        dropout
+        dropout,
+        last_checkpoint_path
     ):
-    images, labels = load_images_with_labels_from_folder(dataset_path, num_images)
-    target_path = None
-    if aug_images_path is None and num_aug_images is not None:
-        target_path = augment_dataset(labels, num_images_per_class=num_aug_images, image_size=image_size)
-    elif aug_images_path is not None and num_aug_images is not None:
-        target_path = aug_images_path
 
-    if len(images) == 0:
-        labels = []
-
-    if target_path is not None:
-        new_images, new_labels = load_images_with_labels_from_folder(target_path, num_aug_images)
-        images.extend(new_images)
-        labels.extend(new_labels)
+    # Load the dataset
+    images, labels = DatasetAugmentation().augment_dataset(
+        label_queries=os.path.join(download_images_path, "label_queries.json"),
+        output_directory=os.path.join(download_images_path, "images"),
+        max_links_to_fetch=num_images,
+        image_shape=(image_size, image_size),
+        resize_images=True,
+        return_data=True,
+        cache_data=True
+    )
 
     model = ViTForImageClassification(
         model_name=pretrained_model_name,
@@ -83,6 +76,7 @@ def train(
         dropout=dropout)
 
     # Labels to categorical
+    print("Converting labels to categorical")
     labels = model.label_encoder.fit_transform(labels)
 
     # Define torchvision transforms to be applied to each image.
@@ -103,6 +97,7 @@ def train(
             normalize,
         ])(batch)
 
+    print("Preparing dataset")
     train_dataset, test_dataset = prepare_dataset(
         images, labels, model, .2, train_transforms, val_transforms)
 
@@ -123,8 +118,12 @@ def train(
         eval_dataset=test_dataset,
         compute_metrics=compute_metrics,
     )
-    train_result = trainer.train()
-    # train_result = trainer.train(resume_from_checkpoint='output/checkpoint-6000')
+    print("Training")
+    # Resume training from a checkpoint
+    if last_checkpoint_path:
+        trainer.train(resume_from_checkpoint='output/checkpoint-6000')
+    else:
+        trainer.train()
     # Evaluate the model
     eval_result = trainer.evaluate()
     print(eval_result)

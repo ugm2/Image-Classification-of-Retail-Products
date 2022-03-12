@@ -12,11 +12,13 @@ logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
 
 class ViTForImageClassification(nn.Module):
-    def __init__(self, model_name, num_labels=25, dropout=0.25):
+    def __init__(self, model_name, num_labels=25, dropout=0.25, image_size=224):
         logger.info("Loading model")
         super(ViTForImageClassification, self).__init__()
         self.vit = ViTModel.from_pretrained(model_name)
         self.feature_extractor = ViTFeatureExtractor.from_pretrained(model_name)
+        self.feature_extractor.do_resize = True
+        self.feature_extractor.size = image_size
         self.dropout = nn.Dropout(dropout)
         self.classifier = nn.Linear(self.vit.config.hidden_size, num_labels)
         self.num_labels = num_labels
@@ -51,11 +53,12 @@ class ViTForImageClassification(nn.Module):
         logger.info("Predicting")
         prep_images = self.preprocess_image(images)['pixel_values']
         sequence_classifier_output = self.forward(prep_images, None)
-        # Get max logit
-        logits = sequence_classifier_output.logits.detach().cpu().numpy()
-        class_nums = np.argmax(logits, axis=1)
+        # Get max prob
+        probs = sequence_classifier_output.logits.softmax(dim=-1).tolist()
+        class_nums = np.argmax(probs, axis=1)
+        confidences = np.max(probs, axis=1)
         class_names = self.label_encoder.inverse_transform(class_nums)
-        return class_names
+        return class_names, confidences
 
     def save(self, path):
         logger.info("Saving model")

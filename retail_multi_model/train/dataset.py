@@ -1,6 +1,6 @@
 import torch
 
-class FreiburgGroceriesDataset(torch.utils.data.Dataset):
+class RetailDataset(torch.utils.data.Dataset):
     def __init__(self, data, labels, transform=None):
         self.data = data
         self.labels = labels
@@ -9,14 +9,14 @@ class FreiburgGroceriesDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         item = {key: val[idx].detach().clone() for key, val in self.data.items()}
-        item['labels'] = torch.tensor(self.labels[idx])
+        item['labels'] = self.labels[idx]
         return item
 
     def __len__(self):
         return len(self.labels)
 
     def __repr__(self):
-        return 'FreiburgGroceriesDataset'
+        return 'RetailDataset'
 
     def __str__(self):
         return str({

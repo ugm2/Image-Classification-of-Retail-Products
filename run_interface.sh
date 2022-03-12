@@ -1,1 +1,10 @@
+export $(xargs <env_vars.env)
+
+if [ -z ${INTERFACE_PORT+x} ]; then
+  INTERFACE_PORT=5002
+else
+  INTERFACE_PORT="${INTERFACE_PORT}"
+fi
+
+
 streamlit run interface/interface.py --server.port=5003 --server.fileWatcherType none
