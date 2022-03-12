@@ -30,7 +30,7 @@ In order to train the model, we need to:
 
 ## Server & Interface
 
-1. Set the corresponding env variables in `.env` file. Current env variables are:
+1. Set the corresponding env variables in `env_vars.env` file. Current env variables are:
 
    * MODEL_PATH: Path to the model.
    * SERVER_PORT: Port to run the server from.
