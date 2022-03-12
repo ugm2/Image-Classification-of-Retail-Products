@@ -1,11 +1,6 @@
 # Image-Classification-of-Retail-Products
 
-Leverages a multi class classification model for classifying retail products from a supermarket
-
-## Download Dataset
-
-* Execute `download_dataset.sh` to download the dataset
-* A folder called `images/` will be created, containing the 25 different retail products
+Leverages a multi class classification model for classifying retail products from a supermarket.
 
 ## Install
 
@@ -15,12 +10,22 @@ Leverages a multi class classification model for classifying retail products fro
 
 ## Training
 
-For training, we use ImagineS, a library of my own, to do scrapping of images on Google Search Engine to create a dataset for Grocery Classification.
+For training, I use ImagineS, a library of my own, to do scrapping of images on Google Search Engine to create a dataset for Grocery Classification.
 In order to train the model, we need to:
 
 * Install chrome in your machine.
 * Make sure `.data/label_queries.json` has the labels and queries you need.
-* Review training parameters in `python retail_multi_model/train/train.py` and execute.
+* Review training parameters in `python retail_multi_model/train/train.py`:
+  * `download_images_path`: Path to download images to.
+  * `num_images`: Number of images per class to load.
+  * `pretrained_model_name`: Name of the pretrained model to use.
+  * `num_epochs`: Number of epochs to train for.
+  * `batch_size`: Batch size to use.
+  * `learning_rate`: Learning rate to use.
+  * `image_size`: Size of the images to use. If images come in different sizes, the images will be resized to this size.
+  * `dropout`: Dropout of the last layer to use.
+  * `last_checkpoint_path`: Path to the last checkpoint to use. Default is None.
+* Execute `python retail_multi_model/train/train.py` for training, adding the values of the parameters that you need.
 * Resulting checkpoints and the final model will be saved in `output/`.
 
 ## Server & Interface

@@ -46,6 +46,7 @@ def compute_metrics(eval_pred):
 @click.option('--learning_rate', default=0.000001, help='Learning rate')
 @click.option('--image_size', default=224, help='Image size')
 @click.option('--dropout', default=0.5, help='Dropout rate')
+@click.option('--last_checkpoint_path', default=None, help='Last checkpoint path')
 def train(
         download_images_path,
         num_images,
@@ -54,7 +55,8 @@ def train(
         batch_size,
         learning_rate,
         image_size,
-        dropout
+        dropout,
+        last_checkpoint_path
     ):
 
     # Load the dataset
@@ -117,8 +119,11 @@ def train(
         compute_metrics=compute_metrics,
     )
     print("Training")
-    train_result = trainer.train()
-    # train_result = trainer.train(resume_from_checkpoint='output/checkpoint-6000')
+    # Resume training from a checkpoint
+    if last_checkpoint_path:
+        trainer.train(resume_from_checkpoint='output/checkpoint-6000')
+    else:
+        trainer.train()
     # Evaluate the model
     eval_result = trainer.evaluate()
     print(eval_result)
