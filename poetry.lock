@@ -502,11 +502,11 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "fsspec"
-version = "2022.1.0"
+version = "2022.2.0"
 description = "File-system specification"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 aiohttp = {version = "*", optional = true, markers = "extra == \"http\""}
@@ -704,7 +704,7 @@ tifffile = ["tifffile"]
 
 [[package]]
 name = "imagines"
-version = "0.0.3"
+version = "0.0.6"
 description = "ImagineS (Image Engine Search) tool augments an image dataset by searching a series of queries in Google Images."
 category = "main"
 optional = false
@@ -2318,7 +2318,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">3.7,<3.10"
-content-hash = "867694eb55e3e17e5dd33be01bcd86f346c736baa248d46715274a081ac61d12"
+content-hash = "5517663fe8239d320b5c3497f41ddb74d2d9f0ae50b679c4b05067d1ef949c7f"
 
 [metadata.files]
 absl-py = [
@@ -2737,8 +2737,8 @@ frozenlist = [
     {file = "frozenlist-1.2.0.tar.gz", hash = "sha256:68201be60ac56aff972dc18085800b6ee07973c49103a8aba669dee3d71079de"},
 ]
 fsspec = [
-    {file = "fsspec-2022.1.0-py3-none-any.whl", hash = "sha256:256e2be44e62430c9ca8dac2e480384b00a3c52aef4e2b0b7204163fdc861d37"},
-    {file = "fsspec-2022.1.0.tar.gz", hash = "sha256:0bdd519bbf4d8c9a1d893a50b5ebacc89acd0e1fe0045d2f7b0e0c1af5990edc"},
+    {file = "fsspec-2022.2.0-py3-none-any.whl", hash = "sha256:eb9c9d9aee49d23028deefffe53e87c55d3515512c63f57e893710301001449a"},
+    {file = "fsspec-2022.2.0.tar.gz", hash = "sha256:20322c659538501f52f6caa73b08b2ff570b7e8ea30a86559721d090e473ad5c"},
 ]
 gast = [
     {file = "gast-0.4.0-py3-none-any.whl", hash = "sha256:b7adcdd5adbebf1adf17378da5ba3f543684dbec47b1cda1f3997e573cd542c4"},
@@ -2846,8 +2846,8 @@ imageio = [
     {file = "imageio-2.13.5.tar.gz", hash = "sha256:c7ec2be58e401b6eaa838f8eaf8368ed54b2de4a1b001fe6551644f1a30a843d"},
 ]
 imagines = [
-    {file = "imagines-0.0.3-py3-none-any.whl", hash = "sha256:0db525a9f2f5f205040b05a5f378c37467a9bd3a1af8f9baa3cac5179cc775dd"},
-    {file = "imagines-0.0.3.tar.gz", hash = "sha256:b5ec382eb916b65ab62bab7f1e724523e436f9625d6ca9bce7c50d512a6cc561"},
+    {file = "imagines-0.0.6-py3-none-any.whl", hash = "sha256:19ab7bd1aec4e3134eee50f5dde7b92ddf6acde0721d821c15281c63d38de973"},
+    {file = "imagines-0.0.6.tar.gz", hash = "sha256:3fe6840e6459baff612bda91eb07b820ff6ad02e3cebadfc1dfcff8d6b6e326b"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.8.2-py3-none-any.whl", hash = "sha256:53ccfd5c134223e497627b9815d5030edf77d2ed573922f7a0b8f8bb81a1c100"},
