@@ -5,8 +5,9 @@ Leverages a multi class classification model for classifying retail products fro
 ## Install
 
 * Install poetry in your OS using [this guide](https://python-poetry.org/docs/)
-* Install env `poetry install`
 * Get into the env `poetry shell`
+* Install env `poetry install`
+* Run `poe force-cuda11` to install the required torch CUDA version
 
 ## Training
 
