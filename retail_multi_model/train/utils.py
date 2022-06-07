@@ -5,6 +5,7 @@ import logging
 from sklearn.model_selection import train_test_split
 from retail_multi_model.train.dataset import RetailDataset
 from transformers import BatchFeature
+from PIL import Image
 np.random.seed(42)
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
@@ -26,11 +27,11 @@ def prepare_dataset(images,
     images_train_prep = []
     images_test_prep = []
     for bs in tqdm(range(0, len(images_train), batch_size), desc="Preprocessing training images"):
-        images_train_batch = images_train[bs:bs+batch_size]
+        images_train_batch = [Image.fromarray(np.array(image)) for image in images_train[bs:bs+batch_size]]
         images_train_batch = model.preprocess_image(images_train_batch)
         images_train_prep.append(images_train_batch['pixel_values'])
     for bs in tqdm(range(0, len(images_test), batch_size), desc="Preprocessing test images"):
-        images_test_batch = images_test[bs:bs+batch_size]
+        images_test_batch = [Image.fromarray(np.array(image)) for image in images_test[bs:bs+batch_size]]
         images_test_batch = model.preprocess_image(images_test_batch)
         images_test_prep.append(images_test_batch['pixel_values'])
 
