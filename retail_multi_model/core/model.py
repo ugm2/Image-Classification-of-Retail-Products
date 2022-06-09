@@ -25,6 +25,10 @@ class ViTForImageClassification(nn.Module):
         self.label_encoder = LabelEncoder()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_name = model_name
+        # To device
+        self.vit.to(self.device)
+        self.to(self.device)
+        self.classifier.to(self.device)
 
     def forward(self, pixel_values, labels):
         logger.info("Forwarding")
