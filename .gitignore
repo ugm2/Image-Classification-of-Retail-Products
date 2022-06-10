@@ -141,3 +141,7 @@ model/
 
 # Selenium
 chromedriver
+
+# Metrics
+log_history.csv
+metrics.csv

@@ -15,6 +15,7 @@ from torchvision.transforms import (
     Resize,
     ToTensor,
 )
+from sklearn.metrics import classification_report
 from imagines import DatasetAugmentation
 
 metric = load_metric("accuracy")
@@ -24,7 +25,10 @@ import pandas as pd
 
 metrics_list = []
 
+model = None
+
 def compute_metrics(eval_pred):
+    global model
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
     metrics = metric.compute(predictions=predictions, references=labels)
@@ -33,6 +37,7 @@ def compute_metrics(eval_pred):
     metrics_list.append(metrics)
     metrics_df = pd.DataFrame(metrics_list)
     metrics_df.to_csv("metrics.csv")
+    print(classification_report(labels, predictions, target_names=model.label_encoder.classes_))
     return metrics
 
 @click.command()
@@ -41,9 +46,9 @@ def compute_metrics(eval_pred):
 @click.option('--pretrained_model_name',
               default='google/vit-base-patch16-224',
               help='Name of the model')
-@click.option('--num_epochs', default=20, help='Number of epochs')
-@click.option('--batch_size', default=64, help='Batch size')
-@click.option('--learning_rate', default=0.000001, help='Learning rate')
+@click.option('--num_epochs', default=100, help='Number of epochs')
+@click.option('--batch_size', default=32, help='Batch size')
+@click.option('--learning_rate', default=0.00005, help='Learning rate')
 @click.option('--image_size', default=224, help='Image size')
 @click.option('--dropout', default=0.5, help='Dropout rate')
 @click.option('--last_checkpoint_path', default=None, help='Last checkpoint path')
@@ -58,6 +63,7 @@ def train(
         dropout,
         last_checkpoint_path
     ):
+    global model
 
     # Load the dataset
     images, labels = DatasetAugmentation().augment_dataset(
@@ -121,7 +127,7 @@ def train(
     print("Training")
     # Resume training from a checkpoint
     if last_checkpoint_path:
-        trainer.train(resume_from_checkpoint='output/checkpoint-6000')
+        trainer.train(resume_from_checkpoint=last_checkpoint_path)
     else:
         trainer.train()
     # Evaluate the model
