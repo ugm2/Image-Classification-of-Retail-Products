@@ -14,4 +14,4 @@ fi
 
 
 python -m uvicorn retail_multi_model.api.server:app --host 0.0.0.0 --port $SERVER_PORT &
-streamlit run interface/interface.py --server.port=INTERFACE_PORT --server.fileWatcherType none && fg
+streamlit run interface/interface.py --server.port=$INTERFACE_PORT --server.fileWatcherType none && fg

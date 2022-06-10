@@ -7,4 +7,4 @@ else
 fi
 
 
-streamlit run interface/interface.py --server.port=5003 --server.fileWatcherType none
+streamlit run interface/interface.py --server.port=$INTERFACE_PORT --server.fileWatcherType none

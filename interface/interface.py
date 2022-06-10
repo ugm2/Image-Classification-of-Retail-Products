@@ -2,8 +2,30 @@ import streamlit as st
 from PIL import Image
 import requests
 import io
+import time
 
 st.title("Grocery Classifier")
+patience = 5
+with st.spinner("Retrieving labels"):
+    while True:
+        try:
+            response = requests.post("http://localhost:5002/get_labels")
+            labels = set(response.json()["labels"])
+            break
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            time.sleep(2)
+            patience -= 1
+            if patience == 0:
+                raise Exception("Could not connect to server. Make sure the server is running.")
+            continue
+        except:
+            labels = None
+            break
+    
+if labels is None:
+    st.warning("Received error from server, labels could not be retrieved")
+else:
+    st.write("Labels:", labels)
 
 image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 

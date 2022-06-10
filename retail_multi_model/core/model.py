@@ -12,7 +12,7 @@ logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
 
 class ViTForImageClassification(nn.Module):
-    def __init__(self, model_name, num_labels=25, dropout=0.25, image_size=224):
+    def __init__(self, model_name, num_labels=24, dropout=0.25, image_size=224):
         logger.info("Loading model")
         super(ViTForImageClassification, self).__init__()
         self.vit = ViTModel.from_pretrained(model_name)
@@ -73,9 +73,12 @@ class ViTForImageClassification(nn.Module):
 
     def load(self, path):
         logger.info("Loading model")
-        self.load_state_dict(torch.load(path + "/model.pt"))
         # Load label encoder
         self.label_encoder.classes_ = np.load(path + "/label_encoder.npy")
+        # Reload classifier layer
+        self.classifier = nn.Linear(self.vit.config.hidden_size, len(self.label_encoder.classes_))
+        
+        self.load_state_dict(torch.load(path + "/model.pt"))
         self.vit.to(self.device)
         self.vit.eval()
         self.to(self.device)
