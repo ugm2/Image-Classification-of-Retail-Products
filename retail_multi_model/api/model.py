@@ -1,4 +1,5 @@
 """Retail Data Models."""
+from fastapi import File, UploadFile
 from pydantic import BaseModel
 
 class RetailResponse(BaseModel):
@@ -9,3 +10,8 @@ class RetailResponse(BaseModel):
 class RetailLabels(BaseModel):
     """Retail Labels."""
     labels: list
+    
+class RetailFeedback(BaseModel):
+    """Retail Feedback."""
+    correct_label: str
+    image: UploadFile = File(...)
