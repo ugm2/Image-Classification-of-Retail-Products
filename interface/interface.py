@@ -54,7 +54,9 @@ if image_file is not None:
     
     # User feedback
     st.markdown("If this prediction was incorrect, please select below the correct label")
-    correct_label = st.selectbox("Correct label", labels, index=labels.index(response_json["prediction"]))
+    correct_labels = labels.copy()
+    correct_labels.remove(response_json["prediction"])
+    correct_label = st.selectbox("Correct label", correct_labels)
     if st.button("Submit"):
         # Save feedback
         response = requests.post("http://localhost:5002/feedback", json={"correct_label": correct_label}, files={"image": image_bytes})

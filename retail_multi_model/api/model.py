@@ -11,7 +11,3 @@ class RetailLabels(BaseModel):
     """Retail Labels."""
     labels: list
     
-class RetailFeedback(BaseModel):
-    """Retail Feedback."""
-    correct_label: str
-    image: UploadFile = File(...)

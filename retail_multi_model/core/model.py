@@ -78,7 +78,7 @@ class ViTForImageClassification(nn.Module):
         # Reload classifier layer
         self.classifier = nn.Linear(self.vit.config.hidden_size, len(self.label_encoder.classes_))
         
-        self.load_state_dict(torch.load(path + "/model.pt"))
+        self.load_state_dict(torch.load(path + "/model.pt", map_location=self.device))
         self.vit.to(self.device)
         self.vit.eval()
         self.to(self.device)
