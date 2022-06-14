@@ -131,6 +131,7 @@ dmypy.json
 # Images
 images/
 new_images/
+feedback/
 
 # Tar.gz
 *.tar.gz

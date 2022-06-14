@@ -10,4 +10,3 @@ class RetailResponse(BaseModel):
 class RetailLabels(BaseModel):
     """Retail Labels."""
     labels: list
-    

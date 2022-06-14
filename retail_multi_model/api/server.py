@@ -1,6 +1,6 @@
 """Retail Classification Service."""
 import time
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, Form, UploadFile, File
 from retail_multi_model.api.model import RetailResponse, RetailLabels
 from retail_multi_model.core.model import ViTForImageClassification
 from PIL import Image
@@ -46,7 +46,7 @@ def get_retail_labels():
 @app.post("/feedback",
     status_code=200,
     name="feedback_retail_items")
-def feedback_retail_items(correct_label: str, image: UploadFile = File(...)):
+def feedback_retail_items(image : UploadFile = File(...), correct_label: str = Form(...)):
     """Receives feedback and saves it to a file."""
     # Save feedback image to folder with the label name
     label_name = correct_label
