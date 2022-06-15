@@ -74,6 +74,10 @@ class ViTForImageClassification(nn.Module):
     def load(self, path):
         logger.info("Loading model")
         # Load label encoder
+        # Check if label encoder and model exists
+        if not os.path.exists(path + "/label_encoder.npy") or not os.path.exists(path + "/model.pt"):
+            logger.warning("Label encoder or model not found")
+            return
         self.label_encoder.classes_ = np.load(path + "/label_encoder.npy")
         # Reload classifier layer
         self.classifier = nn.Linear(self.vit.config.hidden_size, len(self.label_encoder.classes_))
@@ -83,3 +87,11 @@ class ViTForImageClassification(nn.Module):
         self.vit.eval()
         self.to(self.device)
         self.eval()
+        
+    def partial_fit(self, images, labels):
+        logger.info("Partial fitting")
+        # Freeze ViT model but last layer
+        params = [param for param in self.vit.parameters()]
+        for param in params[:-1]:
+            param.requires_grad = False
+        # TODO: Add partial fit

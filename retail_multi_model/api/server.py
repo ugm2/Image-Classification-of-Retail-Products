@@ -6,7 +6,7 @@ from retail_multi_model.core.model import ViTForImageClassification
 from PIL import Image
 import os
 
-model_path = os.environ.get('MODEL_PATH', "./model")
+model_path = os.environ.get('MODEL_PATH', "./new_model")
 data_path = os.environ.get('DATA_PATH', "./data")
 feedback_path = data_path + "/feedback"
 

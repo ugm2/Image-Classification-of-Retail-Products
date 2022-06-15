@@ -138,5 +138,46 @@ def train(
     log_history_df.to_csv("log_history.csv")
 
 
+def prepare_training(images, labels, model):
+    labels = model.label_encoder.transform(labels)
+    normalize = Normalize(mean=model.feature_extractor.image_mean, std=model.feature_extractor.image_std)
+    def train_transforms(batch):
+        return Compose([
+            RandomResizedCrop(model.feature_extractor.size),
+            RandomHorizontalFlip(),
+            ToTensor(),
+            normalize,
+        ])(batch)
+
+    def val_transforms(batch):
+        return Compose([
+            Resize(model.feature_extractor.size),
+            CenterCrop(model.feature_extractor.size),
+            ToTensor(),
+            normalize,
+        ])(batch)
+    train_dataset, test_dataset = prepare_dataset(
+        images, labels, model, .2, train_transforms, val_transforms)
+    trainer = Trainer(
+        model=model,
+        args=TrainingArguments(
+            output_dir='output',
+            overwrite_output_dir=True,
+            num_train_epochs=1,
+            per_device_train_batch_size=32,
+            gradient_accumulation_steps=1,
+            learning_rate=0.000001,
+            weight_decay=0.01,
+            evaluation_strategy='steps',
+            eval_steps=1000,
+            save_steps=3000),
+        train_dataset=train_dataset,
+        eval_dataset=test_dataset,
+        compute_metrics=compute_metrics,
+    )
+    eval_result = trainer.evaluate()
+    print(eval_result)
+    model.save('new_model')
+
 if __name__ == '__main__':
     train()

@@ -20,8 +20,15 @@ def prepare_dataset(images,
                     batch_size=512):
     logger.info("Preparing dataset")
     # Split the dataset in train and test
-    images_train, images_test, labels_train, labels_test = \
-        train_test_split(images, labels, test_size=test_size)
+    try:
+        images_train, images_test, labels_train, labels_test = \
+            train_test_split(images, labels, test_size=test_size)
+    except ValueError:
+        logger.warning("Could not split dataset. Using all data for training and testing")
+        images_train = images
+        labels_train = labels
+        images_test = images
+        labels_test = labels
 
     # Preprocess images using model feature extractor
     images_train_prep = []
