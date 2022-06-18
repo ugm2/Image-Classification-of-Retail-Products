@@ -59,8 +59,23 @@ if image_file is not None:
     correct_label = st.selectbox("Correct label", correct_labels)
     if st.button("Submit"):
         # Save feedback
-        response = requests.post("http://localhost:5002/feedback", json={"correct_label": correct_label}, files={"image": image_bytes})
+        response = requests.post(
+            "http://localhost:5002/feedback",
+            data={"correct_label": correct_label},
+            files={"image": image_bytes})
         if response.status_code == 200:
             st.success("Feedback submitted")
         else:
             st.error("Feedback could not be submitted. Error: {}".format(response.text))
+            
+    # Retrain from feedback
+    if st.button("Retrain from feedback"):
+        response = requests.post("http://localhost:5002/retrain")
+        if response.status_code == 200:
+            response_json = response.json()
+            if response_json["status"] == "success":
+                st.success("Model retrained")
+            else:
+                st.warning("Model could not be retrained. Error: {}".format(response_json["message"]))
+        else:
+            st.error("Model could not be retrained. Error: {}".format(response.text))

@@ -14,7 +14,7 @@ app = FastAPI()
 
 model = None
 
-def init_model(model_path):
+def get_model(model_path):
     """Initialize model if not already initialized."""
     global model
     if model is None:
@@ -29,7 +29,7 @@ def init_model(model_path):
     name="predict_retail_items")
 async def classify_retail_items(image: UploadFile = File(...)):
     """Predict retail items."""
-    model = init_model(model_path)
+    model = get_model(model_path)
     image = Image.open(image.file)
     prediction, confidence = model.predict(image)
     return RetailResponse(prediction=prediction[0], confidence=round(confidence[0], 3))
@@ -40,7 +40,7 @@ async def classify_retail_items(image: UploadFile = File(...)):
     name="get_retail_labels")
 def get_retail_labels():
     """Get retail labels."""
-    model = init_model(model_path)
+    model = get_model(model_path)
     return RetailLabels(labels=list(model.label_encoder.classes_))
 
 @app.post("/feedback",
@@ -54,3 +54,16 @@ def feedback_retail_items(image : UploadFile = File(...), correct_label: str = F
     folder_path = feedback_path + "/" + label_name + "/"
     os.makedirs(folder_path, exist_ok=True)
     image.save(folder_path + label_name + "_" + str(int(time.time())) + ".png")
+    return {'status': 'success'}
+    
+@app.post("/retrain",
+    status_code=200,
+    name="retrain_retail_items")
+def retrain_retail_items():
+    """Retrain model from feedback."""
+    # if there are no feedback images, return warning
+    if len(os.listdir(feedback_path)) == 0:
+        return {'status': 'warning', 'message': 'No feedback images found'}
+    model = get_model(model_path)
+    model.retrain_from_path(feedback_path, remove_path=True)
+    return {'status': 'success'}

@@ -1,12 +1,21 @@
+import shutil
+import time
 import numpy as np
+from tqdm import tqdm
 from transformers import ViTModel, ViTFeatureExtractor
 from transformers.modeling_outputs import SequenceClassifierOutput
 import torch.nn as nn
 import torch
-
+from PIL import Image
 import logging
 import os
 from sklearn.preprocessing import LabelEncoder
+from retail_multi_model.train.utils import (
+    re_training, metric, f1_score,
+    classification_report
+)
+
+data_path = os.environ.get('DATA_PATH', "./data")
 
 logging.basicConfig(level=os.getenv("LOGGER_LEVEL", logging.WARNING))
 logger = logging.getLogger(__name__)
@@ -53,16 +62,27 @@ class ViTForImageClassification(nn.Module):
         logger.info("Preprocessing images")
         return self.feature_extractor(images, return_tensors='pt')
 
-    def predict(self, images):
+    def predict(self, images, batch_size=32, classes_names=True, return_probabilities=False):
         logger.info("Predicting")
-        prep_images = self.preprocess_image(images)['pixel_values']
-        sequence_classifier_output = self.forward(prep_images, None)
-        # Get max prob
-        probs = sequence_classifier_output.logits.softmax(dim=-1).tolist()
-        class_nums = np.argmax(probs, axis=1)
-        confidences = np.max(probs, axis=1)
-        class_names = self.label_encoder.inverse_transform(class_nums)
-        return class_names, confidences
+        if not isinstance(images, list):
+            images = [images]
+        classes_list = []
+        confidence_list = []
+        for bs in tqdm(range(0, len(images), batch_size), desc="Preprocessing training images"):
+            images_batch = [image for image in images[bs:bs+batch_size]]
+            images_batch = self.preprocess_image(images_batch)['pixel_values']
+            sequence_classifier_output = self.forward(images_batch, None)
+            # Get max prob
+            probs = sequence_classifier_output.logits.softmax(dim=-1).tolist()
+            classes = np.argmax(probs, axis=1)
+            confidences = np.max(probs, axis=1)
+            classes_list.extend(classes)
+            confidence_list.extend(confidences)
+        if classes_names:
+            classes_list = self.label_encoder.inverse_transform(classes_list)
+        if return_probabilities:
+            return classes_list, confidence_list, probs
+        return classes_list, confidence_list
 
     def save(self, path):
         logger.info("Saving model")
@@ -88,10 +108,81 @@ class ViTForImageClassification(nn.Module):
         self.to(self.device)
         self.eval()
         
-    def partial_fit(self, images, labels):
+    def evaluate(self, images, labels):
+        logger.info("Evaluating")
+        labels = self.label_encoder.transform(labels)
+        # Predict
+        y_pred, _ = self.predict(images, classes_names=False)
+        # Evaluate
+        metrics = metric.compute(predictions=y_pred, references=labels)
+        f1 = f1_score.compute(predictions=y_pred, references=labels, average="macro")
+        print(classification_report(labels, y_pred, labels=[i for i in range(len(self.label_encoder.classes_))], target_names=self.label_encoder.classes_))
+        print(f"Accuracy: {metrics['accuracy']}")
+        print(f"F1: {f1}")
+        
+    def partial_fit(self, images, labels, save_model_path='new_model', num_epochs=10):
         logger.info("Partial fitting")
         # Freeze ViT model but last layer
-        params = [param for param in self.vit.parameters()]
-        for param in params[:-1]:
-            param.requires_grad = False
-        # TODO: Add partial fit
+        # params = [param for param in self.vit.parameters()]
+        # for param in params[:-1]:
+        #     param.requires_grad = False
+        # Model in training mode
+        self.vit.train()
+        self.train()
+        re_training(images, labels, self, save_model_path, num_epochs)
+        self.load(save_model_path)
+        self.vit.eval()
+        self.eval()
+        self.evaluate(images, labels)
+        
+    def __load_from_path(self, path, num_per_label=None):
+        images = []
+        labels = []
+        for label in os.listdir(path):
+            count = 0
+            label_folder_path = os.path.join(path, label)
+            for image_file in tqdm(os.listdir(label_folder_path), desc="Resizing images for label {}".format(label)):
+                file_path = os.path.join(label_folder_path, image_file)
+                try:
+                    image = Image.open(file_path)
+                    image_shape = (self.feature_extractor.size, self.feature_extractor.size)
+                    if image.size != image_shape:
+                        image = image.resize(image_shape)
+                    images.append(image.convert('RGB'))
+                    labels.append(label)
+                    count += 1
+                except Exception as e:
+                    print(f"ERROR - Could not resize image {file_path} - {e}")
+                if num_per_label is not None and count >= num_per_label:
+                    break
+        return images, labels
+        
+    def retrain_from_path(self,
+                          path='./data/feedback',
+                          num_per_label=None,
+                          save_model_path='new_model',
+                          remove_path=False,
+                          num_epochs=10,
+                          save_new_data=data_path + '/new_data'):
+        logger.info("Retraining from path")
+        # Load path
+        images, labels = self.__load_from_path(path, num_per_label)
+        # Retrain
+        self.partial_fit(images, labels, save_model_path, num_epochs)
+        # Remove path folder
+        if remove_path:
+            shutil.rmtree(path)
+        # Save new data
+        if save_new_data is not None:
+            logger.info("Saving new data")
+            os.makedirs(save_new_data, exist_ok=True)
+            for i ,(image, label) in enumerate(zip(images, labels)):
+                image.save(os.path.join(save_new_data, label + "_" + str(int(time.time())) + f"_{i}.jpg"))
+        
+    def evaluate_from_path(self, path, num_per_label=None):
+        logger.info("Evaluating from path")
+        # Load images
+        images, labels = self.__load_from_path(path, num_per_label)
+        # Evaluate
+        self.evaluate(images, labels)
+                    

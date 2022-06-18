@@ -1,7 +1,7 @@
 import torch
 
 class RetailDataset(torch.utils.data.Dataset):
-    def __init__(self, data, labels, transform=None):
+    def __init__(self, data, labels=None, transform=None):
         self.data = data
         self.labels = labels
         self.num_classes = len(set(labels))
