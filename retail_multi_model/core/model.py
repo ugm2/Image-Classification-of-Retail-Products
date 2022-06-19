@@ -175,9 +175,10 @@ class ViTForImageClassification(nn.Module):
         # Save new data
         if save_new_data is not None:
             logger.info("Saving new data")
-            os.makedirs(save_new_data, exist_ok=True)
             for i ,(image, label) in enumerate(zip(images, labels)):
-                image.save(os.path.join(save_new_data, label + "_" + str(int(time.time())) + f"_{i}.jpg"))
+                label_path = os.path.join(save_new_data, label)
+                os.makedirs(label_path, exist_ok=True)
+                image.save(os.path.join(label_path, str(int(time.time())) + f"_{i}.jpg"))
         
     def evaluate_from_path(self, path, num_per_label=None):
         logger.info("Evaluating from path")
