@@ -169,9 +169,6 @@ class ViTForImageClassification(nn.Module):
         images, labels = self.__load_from_path(path, num_per_label)
         # Retrain
         self.partial_fit(images, labels, save_model_path, num_epochs)
-        # Remove path folder
-        if remove_path:
-            shutil.rmtree(path)
         # Save new data
         if save_new_data is not None:
             logger.info("Saving new data")
@@ -179,6 +176,10 @@ class ViTForImageClassification(nn.Module):
                 label_path = os.path.join(save_new_data, label)
                 os.makedirs(label_path, exist_ok=True)
                 image.save(os.path.join(label_path, str(int(time.time())) + f"_{i}.jpg"))
+        # Remove path folder
+        if remove_path:
+            logger.info("Removing feedback path")
+            shutil.rmtree(path)
         
     def evaluate_from_path(self, path, num_per_label=None):
         logger.info("Evaluating from path")

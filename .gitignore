@@ -139,6 +139,7 @@ feedback/
 
 # Model weights
 output/
+new_model/
 model/
 
 # Selenium
