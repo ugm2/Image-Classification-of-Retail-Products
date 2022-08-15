@@ -8,7 +8,7 @@ st.set_page_config(
      page_title="Grocery Classifier",
      page_icon="interface/shopping-cart.png",
      initial_sidebar_state="expanded"
- )
+)
 
 def predict(image):
     print("Predicting...")
