@@ -74,6 +74,7 @@ def main():
             st.markdown(f"**Confidence:** {st.session_state['response_json']['confidence']}")
             
             # User feedback
+            st.subheader("User Feedback")
             st.markdown("If this prediction was incorrect, please select below the correct label")
             correct_labels = labels.copy()
             correct_labels.remove(st.session_state['response_json']["prediction"])
