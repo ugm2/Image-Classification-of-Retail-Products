@@ -32,7 +32,7 @@ async def classify_retail_items(image: UploadFile = File(...)):
     model = get_model(model_path)
     image = Image.open(image.file)
     prediction, confidence = model.predict(image)
-    return RetailResponse(prediction=prediction[0], confidence=round(confidence[0], 3))
+    return RetailResponse(prediction=str(prediction[0]), confidence=round(confidence[0], 3))
 
 @app.post("/get_labels",
     response_model=RetailLabels,

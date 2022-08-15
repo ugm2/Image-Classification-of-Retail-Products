@@ -4,10 +4,16 @@ import requests
 import io
 import time
 
+st.set_page_config(
+     page_title="Grocery Classifier",
+     page_icon="interface/shopping-cart.png",
+     initial_sidebar_state="expanded"
+ )
+
 def predict(image):
     print("Predicting...")
     # Load using PIL
-    image = Image.open(image_file)
+    image = Image.open(image)
 
     # Image to bytes
     image_bytes = io.BytesIO()
@@ -43,53 +49,54 @@ def get_labels():
                 break
     return labels
 
-labels = get_labels()
+def main():
+    labels = get_labels()
 
-st.title("Grocery Classifier")
-    
-if labels is None:
-    st.warning("Received error from server, labels could not be retrieved")
-else:
-    st.write("Labels:", labels)
-
-image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-if image_file is not None:
-    st.image(image_file)
-
-    st.subheader("Classification")
-    
-    if st.button("Predict"):
-        st.session_state['response_json'], st.session_state['image_bytes'] = predict(image_file)
-
-    if 'response_json' in st.session_state and st.session_state['response_json'] is not None:
-        # Show the result
-        st.markdown(f"**Prediction:** {st.session_state['response_json']['prediction']}")
-        st.markdown(f"**Confidence:** {st.session_state['response_json']['confidence']}")
+    st.title("🍇 Grocery Classifier 🥑")
         
-        # User feedback
-        st.markdown("If this prediction was incorrect, please select below the correct label")
-        correct_labels = labels.copy()
-        correct_labels.remove(st.session_state['response_json']["prediction"])
-        correct_label = st.selectbox("Correct label", correct_labels)
-        if st.button("Submit"):
-            # Save feedback
-            response = requests.post(
-                "http://localhost:5002/feedback",
-                data={"correct_label": correct_label},
-                files={"image": st.session_state['image_bytes']})
-            if response.status_code == 200:
-                st.success("Feedback submitted")
-            else:
-                st.error("Feedback could not be submitted. Error: {}".format(response.text))
-                
-        # Retrain from feedback
-        if st.button("Retrain from feedback"):
-            response = requests.post("http://localhost:5002/retrain")
-            if response.status_code == 200:
-                response_json = response.json()
-                if response_json["status"] == "success":
-                    st.success("Model retrained")
+    if labels is None:
+        st.warning("Received error from server, labels could not be retrieved")
+    else:
+        st.write("Labels:", labels)
+
+    image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    if image_file is not None:
+        st.image(image_file)
+
+        st.subheader("Classification")
+        
+        if st.button("Predict"):
+            st.session_state['response_json'], st.session_state['image_bytes'] = predict(image_file)
+
+        if 'response_json' in st.session_state and st.session_state['response_json'] is not None:
+            # Show the result
+            st.markdown(f"**Prediction:** {st.session_state['response_json']['prediction']}")
+            st.markdown(f"**Confidence:** {st.session_state['response_json']['confidence']}")
+            
+            # User feedback
+            st.markdown("If this prediction was incorrect, please select below the correct label")
+            correct_labels = labels.copy()
+            correct_labels.remove(st.session_state['response_json']["prediction"])
+            correct_label = st.selectbox("Correct label", correct_labels)
+            if st.button("Submit"):
+                # Save feedback
+                response = requests.post(
+                    "http://localhost:5002/feedback",
+                    data={"correct_label": correct_label},
+                    files={"image": st.session_state['image_bytes']})
+                if response.status_code == 200:
+                    st.success("Feedback submitted")
                 else:
-                    st.warning("Model could not be retrained. Error: {}".format(response_json["message"]))
-            else:
-                st.error("Model could not be retrained. Error: {}".format(response.text))
+                    st.error("Feedback could not be submitted. Error: {}".format(response.text))
+                    
+            # Retrain from feedback
+            if st.button("Retrain from feedback"):
+                response = requests.post("http://localhost:5002/retrain")
+                if response.status_code == 200:
+                    response_json = response.json()
+                    if response_json["status"] == "success":
+                        st.success("Model retrained")
+                    else:
+                        st.warning("Model could not be retrained. Error: {}".format(response_json["message"]))
+                else:
+                    st.error("Model could not be retrained. Error: {}".format(response.text))
